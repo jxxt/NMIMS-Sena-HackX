@@ -14,8 +14,6 @@ firebase_admin.initialize_app(cred, {
 app = FastAPI()
 
 # Pydantic model for request validation
-
-
 class Event(BaseModel):
     eventName: str
     eventDescription: str
@@ -26,11 +24,8 @@ class Event(BaseModel):
     eventStatus: str = Field(default="incomplete")
 
 # Function to generate a unique 6-digit event ID
-
-
 def generate_unique_event_id():
     ref = db.reference('events')
-
     while True:
         # Generate a 6-digit random number as event ID
         event_id = str(random.randint(100000, 999999))
@@ -42,8 +37,6 @@ def generate_unique_event_id():
             return event_id  # Return if unique
 
 # POST endpoint to create an event
-
-
 @app.post("/events/")
 async def create_event(event: Event):
     try:
@@ -60,5 +53,21 @@ async def create_event(event: Event):
         ref.child(event_id).set(event_data)
 
         return {"eventId": event_id, "message": "Event created successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
+
+# GET endpoint to fetch event details by eventId
+@app.get("/events/{eventId}")
+async def fetch_event(eventId: str):
+    try:
+        # Reference to the event in Firebase Realtime Database
+        event_ref = db.reference(f'events/{eventId}')
+        event_data = event_ref.get()
+
+        # Check if event exists
+        if event_data:
+            return {"eventId": eventId, "eventDetails": event_data}
+        else:
+            raise HTTPException(status_code=404, detail="Event not found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
