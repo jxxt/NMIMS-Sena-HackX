@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import UserLandingPage from "./pages/UserLandingPage";
 import Card from "./pages/Card";
 import Documentation from "./pages/Documentation"; // Import Documentation page
+import AdminDashboard from "./pages/AdminDashboard"; // Import Admin Dashboard
 import bgImage from "./assets/bg.png"; // Import background image
 import { HeroSection } from "./components/HeroSection";
 
@@ -36,6 +37,7 @@ const AppContent = () => {
             <Route path="/landing" element={<UserLandingPage />} />
             <Route path="/photos" element={<Card />} />
             <Route path="/documentation" element={<Documentation />} /> {/* Added route for Documentation */}
+            <Route path="/admin" element={<AdminDashboard />} /> {/* Added route for Admin Dashboard */}
           </Routes>
 
           {/* Show HeroSection only on the homepage */}
