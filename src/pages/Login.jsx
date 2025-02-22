@@ -1,127 +1,163 @@
-import React, { useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+// src/components/Login.js
+import { useState, useEffect } from "react";
+import {
+    auth,
+    sendSignInLinkToEmail,
+    isSignInWithEmailLink,
+    signInWithEmailLink,
+    db,
+    ref,
+    get,
+    set,
+} from "../config/firebase";
+import { useNavigate } from "react-router-dom";
 
-const Signup = () => {
-    const [isLoading, setIsLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        password: "",
-        phone: "",
-    });
+const Login = () => {
+    const [email, setEmail] = useState("");
+    const navigate = useNavigate();
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
+    const handleEmailChange = (e) => {
+        setEmail(e.target.value);
     };
 
-    const validateForm = () => {
-        if (
-            !formData.name ||
-            !formData.email ||
-            !formData.password ||
-            !formData.phone
-        ) {
-            toast.error("All fields are required");
-            return false;
+    const handleLogin = async () => {
+        if (!email) return alert("Please enter a valid email.");
+
+        const actionCodeSettings = {
+            url: window.location.href,
+            handleCodeInApp: true,
+        };
+
+        try {
+            await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+            window.localStorage.setItem("emailForSignIn", email);
+            alert("Check your email for the sign-in link.");
+        } catch (error) {
+            console.error("Error sending email link", error);
+            alert("Failed to send email link. Try again.");
         }
-        if (!formData.email.includes("@")) {
-            toast.error("Please enter a valid email address");
-            return false;
-        }
-        if (formData.password.length < 6) {
-            toast.error("Password must be at least 6 characters long");
-            return false;
-        }
-        if (formData.phone.length < 10) {
-            toast.error("Please enter a valid phone number");
-            return false;
-        }
-        return true;
     };
 
-    const handleSignup = (e) => {
-        e.preventDefault();
-        if (!validateForm()) return;
-        setIsLoading(true);
-        setTimeout(() => {
-            toast.success("Signup successful (UI only)");
-            setIsLoading(false);
-        }, 1000);
+    // Function to generate unique eventHostId (8 digits)
+    const generateUniqueEventHostId = async () => {
+        const id = Math.floor(10000000 + Math.random() * 90000000).toString();
+        const usersRef = ref(db, `users`);
+        const snapshot = await get(usersRef);
+
+        if (snapshot.exists()) {
+            const users = snapshot.val();
+            for (let userId in users) {
+                if (users[userId].eventHostId === id) {
+                    return await generateUniqueEventHostId(); // Recursively generate if duplicate
+                }
+            }
+        }
+        return id;
     };
+
+    // Function to generate unique eventHostApiKey (16-character alphanumeric)
+    const generateUniqueEventHostApiKey = async () => {
+        const chars =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        let apiKey = "";
+        for (let i = 0; i < 16; i++) {
+            apiKey += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+
+        const usersRef = ref(db, `users`);
+        const snapshot = await get(usersRef);
+
+        if (snapshot.exists()) {
+            const users = snapshot.val();
+            for (let userId in users) {
+                if (users[userId].eventHostApiKey === apiKey) {
+                    return await generateUniqueEventHostApiKey(); // Recursively generate if duplicate
+                }
+            }
+        }
+        return apiKey;
+    };
+
+    useEffect(() => {
+        const storedEmail = window.localStorage.getItem("emailForSignIn");
+
+        if (isSignInWithEmailLink(auth, window.location.href) && storedEmail) {
+            signInWithEmailLink(auth, storedEmail, window.location.href)
+                .then((result) => {
+                    window.localStorage.removeItem("emailForSignIn");
+
+                    // Store user token and authId in local storage
+                    result.user.getIdToken().then((token) => {
+                        const authId = result.user.uid;
+                        localStorage.setItem("userToken", token);
+                        localStorage.setItem("authId", authId);
+                        console.log("User Token:", token);
+                        console.log("Auth ID:", authId);
+
+                        // Store user data in Firebase Realtime Database
+                        const userRef = ref(db, `users/${authId}`);
+
+                        get(userRef)
+                            .then(async (snapshot) => {
+                                if (!snapshot.exists()) {
+                                    const eventHostId =
+                                        await generateUniqueEventHostId();
+                                    const eventHostApiKey =
+                                        await generateUniqueEventHostApiKey();
+
+                                    set(userRef, {
+                                        email: storedEmail,
+                                        authId: authId,
+                                        role: "host",
+                                        eventHostId: eventHostId,
+                                        eventHostApiKey: eventHostApiKey,
+                                    })
+                                        .then(() => {
+                                            console.log(
+                                                "User data stored in database."
+                                            );
+                                        })
+                                        .catch((error) => {
+                                            console.error(
+                                                "Error storing user data",
+                                                error
+                                            );
+                                        });
+                                } else {
+                                    console.log(
+                                        "User already exists in database."
+                                    );
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(
+                                    "Error checking user data",
+                                    error
+                                );
+                            });
+
+                        navigate("/"); // Redirect after successful login
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error during sign-in", error);
+                    alert("Failed to sign in. Try again.");
+                });
+        }
+    }, [navigate]);
 
     return (
-        <div className="min-h-screen flex flex-col bg-gradient-to-b from-orange-50 to-orange-100">
-            <ToastContainer position="top-right" />
-            <main className="flex-grow flex items-center justify-center px-4 py-12">
-                <div className="w-full max-w-md">
-                    <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
-                        <div className="text-center mb-8">
-                            <h1 className="text-3xl font-bold text-gray-900">
-                                Create an Account
-                            </h1>
-                            <p className="text-gray-500 mt-2">
-                                Please fill in your details to sign up
-                            </p>
-                        </div>
-                        <form onSubmit={handleSignup} className="space-y-5">
-                            <input
-                                id="name"
-                                type="text"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                placeholder="Enter your name"
-                                required
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-orange-500"
-                            />
-                            <input
-                                id="email"
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                placeholder="Enter your email"
-                                required
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-orange-500"
-                            />
-                            <input
-                                id="password"
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="Enter your password"
-                                required
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-orange-500"
-                            />
-                            <input
-                                id="phone"
-                                type="tel"
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                placeholder="Enter your phone number"
-                                required
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-orange-500"
-                            />
-                            <button
-                                type="submit"
-                                disabled={isLoading}
-                                className="w-full bg-orange-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-600 transition-colors"
-                            >
-                                {isLoading ? "Signing up..." : "Sign Up"}
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </main>
+        <div className="login-container">
+            <h2>Login</h2>
+            <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={handleEmailChange}
+            />
+            <button onClick={handleLogin}>Login with Email Link</button>
         </div>
     );
 };
 
-export default Signup;
+export default Login;

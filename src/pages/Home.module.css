@@ -1,0 +1,20 @@
+.home-container {
+    text-align: center;
+    margin-top: 100px;
+  }
+  
+  .home-container h1 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+  }
+  
+  .home-links a {
+    text-decoration: none;
+    color: #007bff;
+    margin: 0 10px;
+  }
+  
+  .home-links a:hover {
+    text-decoration: underline;
+  }
+  
