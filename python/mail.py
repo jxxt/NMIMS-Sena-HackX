@@ -7,7 +7,7 @@ SMTP_SERVER = "smtp.gmail.com"  # Use your email provider's SMTP server
 SMTP_PORT = 587
 SENDER_EMAIL = "gdgnmims@gmail.com"
 SENDER_PASSWORD = "zvyq ikbf ikmx egxv"  # Use App Password for security
-RECEIVER_EMAIL = "jeet.debnath2004@gmail.com"
+RECEIVER_EMAIL = "ajogdand112@gmail.com"
 
 # Read HTML file
 with open("mail.html", "r", encoding="utf-8") as file:
