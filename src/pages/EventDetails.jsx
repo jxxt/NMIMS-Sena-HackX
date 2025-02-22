@@ -12,6 +12,7 @@ const EventDetails = () => {
     const [name, setName] = useState("");
     const [weatherData, setWeatherData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [locationCoords, setLocationCoords] = useState(null);
 
     useEffect(() => {
         const fetchEventDetails = async () => {
@@ -33,8 +34,10 @@ const EventDetails = () => {
     }, []);
 
     const fetchWeather = async () => {
-        const apiKey = "906ee9e8f6fb41abb07201116241206"; // Replace with your actual key
-        const location = eventData?.eventLocation || "Mumbai";
+        const apiKey = "906ee9e8f6fb41abb07201116241206";
+        const location = eventData?.eventLocation;
+        if (!location) return;
+
         const apiUrl = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${location}`;
 
         try {
@@ -59,9 +62,55 @@ const EventDetails = () => {
         }
     };
 
+    const fetchLocationCoordinates = async () => {
+        const location = eventData?.eventLocation;
+        if (!location) return;
+
+        try {
+            // First try to get specific location coordinates
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+                    location
+                )}`
+            );
+            const data = await response.json();
+
+            if (data && data.length > 0) {
+                setLocationCoords({
+                    latitude: parseFloat(data[0].lat),
+                    longitude: parseFloat(data[0].lon),
+                });
+                return;
+            }
+
+            // If specific location not found, try to get state coordinates
+            const stateResponse = await fetch(
+                `https://nominatim.openstreetmap.org/search?format=json&state=${encodeURIComponent(
+                    location
+                )}&country=India`
+            );
+            const stateData = await stateResponse.json();
+
+            if (stateData && stateData.length > 0) {
+                setLocationCoords({
+                    latitude: parseFloat(stateData[0].lat),
+                    longitude: parseFloat(stateData[0].lon),
+                });
+                return;
+            }
+
+            // If neither location nor state found, set to null
+            setLocationCoords(null);
+        } catch (error) {
+            console.error("Error fetching location coordinates:", error);
+            setLocationCoords(null);
+        }
+    };
+
     useEffect(() => {
         if (eventData?.eventLocation) {
             fetchWeather();
+            fetchLocationCoordinates();
         }
     }, [eventData?.eventLocation]);
 
@@ -69,20 +118,10 @@ const EventDetails = () => {
         alert(`You clicked: ${response}`);
     };
 
-    // Custom Marker Icon for Map
     const customMarker = new L.Icon({
         iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
         iconSize: [30, 30],
     });
-
-    // Default Coordinates (Mumbai) if location not available
-    const defaultCoords = {
-        latitude: 19.076,
-        longitude: 72.8777,
-    };
-
-    const latitude = eventData?.latitude || defaultCoords.latitude;
-    const longitude = eventData?.longitude || defaultCoords.longitude;
 
     return (
         <div className={styles.appContainer}>
@@ -105,7 +144,7 @@ const EventDetails = () => {
                         </p>
                         <p>
                             <strong>Location:</strong>{" "}
-                            {eventData?.eventLocation || "Mumbai"}
+                            {eventData?.eventLocation}
                         </p>
                         <p>
                             <strong>Status:</strong> {eventData?.eventStatus}
@@ -140,23 +179,31 @@ const EventDetails = () => {
                         </div>
                     </div>
 
-                    <div className={styles.locationContainer}>
-                        <h2>Location</h2>
-                        <MapContainer
-                            center={[latitude, longitude]}
-                            zoom={12}
-                            style={{ height: "200px", width: "100%" }}
-                        >
-                            <TileLayer
-                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                            />
-                            <Marker
-                                position={[latitude, longitude]}
-                                icon={customMarker}
-                            />
-                        </MapContainer>
-                    </div>
+                    {locationCoords && (
+                        <div className={styles.locationContainer}>
+                            <h2>Location</h2>
+                            <MapContainer
+                                center={[
+                                    locationCoords.latitude,
+                                    locationCoords.longitude,
+                                ]}
+                                zoom={12}
+                                style={{ height: "200px", width: "100%" }}
+                            >
+                                <TileLayer
+                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                />
+                                <Marker
+                                    position={[
+                                        locationCoords.latitude,
+                                        locationCoords.longitude,
+                                    ]}
+                                    icon={customMarker}
+                                />
+                            </MapContainer>
+                        </div>
+                    )}
 
                     <div className={styles.weatherContainer}>
                         <h2>Weather Forecast</h2>
