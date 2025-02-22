@@ -1,5 +1,5 @@
-// src/components/Home.jsx
 import { useEffect, useState } from "react";
+import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { db, ref, get } from "../config/firebase";
 
@@ -10,11 +10,16 @@ const Home = () => {
         eventName: "",
         eventDescription: "",
         eventDate: "",
+        eventTime: "",
         eventLocation: "",
         eventHostId: "",
         eventHostApiKey: "",
         eventStatus: "incomplete",
     });
+    const [suggestions, setSuggestions] = useState([]);
+
+    // Geoapify API Key
+    const GEOAPIFY_API_KEY = "7bc7429af98f4810b5f1960d07f51320";
 
     // Fetch eventHostId and eventHostApiKey using authId
     useEffect(() => {
@@ -48,12 +53,75 @@ const Home = () => {
             ...prev,
             [name]: value,
         }));
+
+        // Fetch location suggestions if the field is eventLocation
+        if (name === "eventLocation") {
+            if (value.trim() === "") {
+                setSuggestions([]); // Clear suggestions if input is empty
+            } else {
+                fetchLocationSuggestions(value);
+            }
+        }
+    };
+
+    // Fetch location suggestions from Geoapify
+    const fetchLocationSuggestions = async (query) => {
+        if (query.length > 2) {
+            try {
+                const response = await axios.get(
+                    `https://api.geoapify.com/v1/geocode/autocomplete`,
+                    {
+                        params: {
+                            text: query,
+                            apiKey: GEOAPIFY_API_KEY,
+                        },
+                    }
+                );
+                setSuggestions(response.data.features);
+            } catch (error) {
+                console.error("Error fetching location suggestions:", error);
+            }
+        } else {
+            setSuggestions([]);
+        }
+    };
+
+    // Handle suggestion click
+    const handleSuggestionClick = (suggestion) => {
+        setEventData((prev) => ({
+            ...prev,
+            eventLocation: suggestion.properties.formatted,
+        }));
+        setSuggestions([]);
     };
 
     // Handle form submission
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(eventData);
+
+        const { eventDate, eventTime, ...restData } = eventData;
+
+        // Combine date and time into a single ISO string
+        const combinedDateTime = new Date(`${eventDate}T${eventTime}`).toISOString();
+
+        // Prepare data to be sent
+        const requestData = {
+            ...restData,
+            eventDate: combinedDateTime,
+        };
+
+        try {
+            const response = await axios.post(
+                "http://localhost:8000/events/",
+                requestData
+            );
+            console.log(response.data);
+            alert("Event created successfully!");
+            setShowModal(false);
+        } catch (error) {
+            console.error("Error creating event:", error);
+            alert("Failed to create event. Please try again.");
+        }
     };
 
     return (
@@ -77,7 +145,19 @@ const Home = () => {
                     </Link>
 
                     <button
-                        onClick={() => setShowModal(true)}
+                        onClick={() => {
+                            setEventData({
+                                eventName: "",
+                                eventDescription: "",
+                                eventDate: "",
+                                eventTime: "",
+                                eventLocation: "",
+                                eventHostId: eventData.eventHostId,
+                                eventHostApiKey: eventData.eventHostApiKey,
+                                eventStatus: "incomplete",
+                            });
+                            setShowModal(true);
+                        }}
                         className="block w-full px-4 py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white text-center font-medium transition duration-200 hover:shadow-lg"
                     >
                         Create New Event
@@ -103,8 +183,8 @@ const Home = () => {
                                 placeholder="Event Name"
                                 value={eventData.eventName}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 bg-gray-800 rounded-lg border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
                                 required
+                                className="w-full px-4 py-3 bg-gray-800 rounded-lg border border-gray-700 text-white placeholder-gray-400 focus:outline-none"
                             />
 
                             <input
@@ -113,8 +193,8 @@ const Home = () => {
                                 placeholder="Event Description"
                                 value={eventData.eventDescription}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 bg-gray-800 rounded-lg border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
                                 required
+                                className="w-full px-4 py-3 bg-gray-800 rounded-lg border border-gray-700 text-white placeholder-gray-400 focus:outline-none"
                             />
 
                             <input
@@ -122,8 +202,17 @@ const Home = () => {
                                 name="eventDate"
                                 value={eventData.eventDate}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 bg-gray-800 rounded-lg border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
                                 required
+                                className="w-full px-4 py-3 bg-gray-800 rounded-lg border border-gray-700 text-white placeholder-gray-400 focus:outline-none"
+                            />
+
+                            <input
+                                type="time"
+                                name="eventTime"
+                                value={eventData.eventTime}
+                                onChange={handleInputChange}
+                                required
+                                className="w-full px-4 py-3 bg-gray-800 rounded-lg border border-gray-700 text-white placeholder-gray-400 focus:outline-none"
                             />
 
                             <input
@@ -132,25 +221,25 @@ const Home = () => {
                                 placeholder="Event Location"
                                 value={eventData.eventLocation}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 bg-gray-800 rounded-lg border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
                                 required
+                                className="w-full px-4 py-3 bg-gray-800 rounded-lg border border-gray-700 text-white placeholder-gray-400 focus:outline-none"
                             />
 
-                            <div className="flex space-x-4">
-                                <button
-                                    type="submit"
-                                    className="w-full px-4 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition duration-200 hover:shadow-lg"
-                                >
-                                    Create Event
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowModal(false)}
-                                    className="w-full px-4 py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition duration-200 hover:shadow-lg"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
+                            <ul className="bg-gray-800 rounded-lg border border-gray-700 text-white">
+                                {suggestions.map((suggestion, index) => (
+                                    <li
+                                        key={index}
+                                        onClick={() => handleSuggestionClick(suggestion)}
+                                        className="cursor-pointer px-4 py-2 hover:bg-gray-700"
+                                    >
+                                        {suggestion.properties.formatted}
+                                    </li>
+                                ))}
+                            </ul>
+
+                            <button type="submit" className="w-full px-4 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition duration-200 hover:shadow-lg">
+                                Create Event
+                            </button>
                         </form>
                     </div>
                 </div>

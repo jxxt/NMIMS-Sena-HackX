@@ -1,0 +1,290 @@
+/* App Container */
+.appContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    background: linear-gradient(to bottom, #8563ff, #2d2d2d);
+    padding: 0;
+    margin: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+  
+  /* Mobile Frame with White Glow */
+  .mobileFrame {
+    width: 500px;
+    height: 550px;
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 0 20px rgba(104, 62, 255, 0.81),
+                0 0 40px rgba(255, 255, 255, 0.1),
+                0 0 60px #1519ffe7,
+                inset 0 0 20px rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(20px);
+  }
+  
+  /* Event Info Page */
+  .eventInfoPage {
+    text-align: center;
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: none;
+    color: hsl(117, 90%, 40%);
+  }
+  
+  .eventInfoPage::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .eventInfoPage h1 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 8px;
+  }
+  
+  .eventInfoPage p {
+    font-size: 16px;
+    color: #8e8e93;
+  }
+  
+  /* Event Details */
+  .eventDetails {
+    margin-top: 24px;
+    text-align: left;
+    background: #060685cc;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(246, 239, 239, 0.982);
+  }
+  
+  .eventDetails h2 {
+    font-size: 20px;
+    margin-bottom: 12px;
+    color: #ffffff;
+  }
+  
+  .eventDetails p {
+    font-size: 16px;
+    color: #7777ff;
+    margin: 8px 0;
+  }
+  
+  /* Weather Container - Apple Style */
+  .weatherContainer {
+    margin: 20px 0;
+    background: rgb(37, 37, 123);
+    border-radius: 20px;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Dynamic Weather Backgrounds */
+  .weatherContainer.sunny {
+    background: linear-gradient(135deg, rgba(255, 166, 0, 0.2), rgba(255, 120, 0, 0.2));
+  }
+  
+  .weatherContainer.night {
+    background: linear-gradient(135deg, rgba(25, 25, 112, 0.2), rgba(0, 0, 139, 0.2));
+  }
+  
+  .weatherInfo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 0;
+  }
+  
+  .weatherInfo .temperature {
+    font-size: 64px;
+    font-weight: 400;
+    color: #ffffff;
+    margin: 8px 0;
+  }
+  
+  .weatherInfo .condition {
+    font-size: 18px;
+    color: #ffffff;
+    margin-bottom: 16px;
+  }
+  
+  .thermometer {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .thermometer::before {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: conic-gradient(
+      from 0deg,
+      var(--temp-color) var(--temp-percentage),
+      transparent var(--temp-percentage)
+    );
+  }
+  
+  .thermometer .temperature {
+    font-size: 24px;
+    font-weight: 600;
+    color: #ffffff;
+    z-index: 1;
+  }
+  
+  .weatherDetails {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex: 1;
+  }
+  
+  .weatherDetailItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .weatherDetailItem .label {
+    font-size: 12px;
+    color: #8e8e93;
+    margin-bottom: 4px;
+  }
+  
+  .weatherDetailItem .value {
+    font-size: 16px;
+    color: #ffffff;
+    font-weight: 500;
+  }
+  
+  /* Weather Icon */
+  .weatherIcon {
+    width: 40px;
+    height: 40px;
+    margin-right: 16px;
+  }
+  
+  /* Current Condition */
+  .currentCondition {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .conditionText {
+    font-size: 16px;
+    color: #ffffff;
+    font-weight: 500;
+  }
+  
+  .weatherContainer {
+    --temp-color: #34c759;
+    --temp-percentage: 50%;
+  }
+  
+  /* Hot Temperature */
+  .weatherContainer[data-temp="hot"] {
+    --temp-color: #ff3b30;
+    --temp-percentage: 80%;
+  }
+  
+  /* Cold Temperature */
+  .weatherContainer[data-temp="cold"] {
+    --temp-color: #0a84ff;
+    --temp-percentage: 30%;
+  }
+  
+  /* RSVP Buttons - Modern Style */
+  .rsvpButtons {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 30px;
+  }
+  
+  .rsvpButton {
+    flex: 1;
+    padding: 16px;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+  }
+  
+  .rsvpButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  }
+  
+  .rsvpButton.attend {
+    background: linear-gradient(135deg, #34c759, #30d158);
+    color: #ffffff;
+  }
+  
+  .rsvpButton.notSure {
+    background: linear-gradient(135deg, #ff9f0a, #ffd60a);
+    color: #000000;
+  }
+  
+  .rsvpButton.decline {
+    background: linear-gradient(135deg, #ff453a, #ff3b30);
+    color: #ffffff;
+  }
+  
+  /* Shared Album Gallery */
+  .albumGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 16px;
+  }
+  
+  .albumItem {
+    background: rgb(31, 31, 105);
+    padding: 20px;
+    border-radius: 16px;
+    text-align: center;
+    font-size: 14px;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 500px) {
+    .mobileFrame {
+      width: 95%;
+      height: 90vh;
+      padding: 16px;
+    }
+  
+    .rsvpButtons {
+      flex-direction: column;
+    }
+  
+    .weatherDetails {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
