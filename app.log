@@ -1,0 +1,107 @@
+2025-02-22 13:43:28,958 - INFO - Firebase initialized successfully
+2025-02-22 13:45:21,808 - INFO - Processing upload request for: wedding1.jpg
+2025-02-22 13:45:21,808 - ERROR - Unexpected error during upload: 'async for' requires an object with __aiter__ method, got SpooledTemporaryFile
+2025-02-22 13:46:56,783 - INFO - Loading Firebase credentials from: event-verse-app-firebase-adminsdk-fbsvc-45e5b30257.json
+2025-02-22 13:46:56,817 - INFO - Firebase initialized successfully
+2025-02-22 13:46:56,818 - INFO - Successfully connected to Firebase bucket: event-verse-app.appspot.com
+2025-02-22 13:47:03,145 - INFO - Starting upload process for file: wedding1.jpg
+2025-02-22 13:47:03,146 - INFO - File content read, size: 88911 bytes
+2025-02-22 13:47:03,148 - INFO - File saved locally at: uploads\wedding1.jpg
+2025-02-22 13:47:04,616 - ERROR - Firebase upload error: 404 POST https://storage.googleapis.com/upload/storage/v1/b/event-verse-app.appspot.com/o?uploadType=multipart: {
+  "error": {
+    "code": 404,
+    "message": "The specified bucket does not exist.",
+    "errors": [
+      {
+        "message": "The specified bucket does not exist.",
+        "domain": "global",
+        "reason": "notFound"
+      }
+    ]
+  }
+}
+: ('Request failed with status code', 404, 'Expected one of', <HTTPStatus.OK: 200>)
+2025-02-22 13:49:25,774 - ERROR - Firebase initialization error: name 'cred_path' is not defined
+2025-02-22 13:49:48,386 - INFO - Firebase initialized successfully
+2025-02-22 13:49:48,387 - INFO - Successfully connected to Firebase bucket: event-verse-app.appspot.com
+2025-02-22 13:49:49,561 - ERROR - Firebase initialization error: 404 POST https://storage.googleapis.com/upload/storage/v1/b/event-verse-app.appspot.com/o?uploadType=multipart: {
+  "error": {
+    "code": 404,
+    "message": "The specified bucket does not exist.",
+    "errors": [
+      {
+        "message": "The specified bucket does not exist.",
+        "domain": "global",
+        "reason": "notFound"
+      }
+    ]
+  }
+}
+: ('Request failed with status code', 404, 'Expected one of', <HTTPStatus.OK: 200>)
+2025-02-22 13:50:18,240 - INFO - Loading Firebase credentials from: event-verse-app-firebase-adminsdk-fbsvc-45e5b30257.json
+2025-02-22 13:50:18,278 - INFO - Firebase initialized successfully
+2025-02-22 13:50:18,280 - INFO - Successfully connected to Firebase bucket: gs://event-verse-app.appspot.com
+2025-02-22 13:50:25,141 - INFO - Starting upload process for file: wedding1.jpg
+2025-02-22 13:50:25,142 - INFO - File content read, size: 88911 bytes
+2025-02-22 13:50:25,144 - INFO - File saved locally at: uploads\wedding1.jpg
+2025-02-22 13:50:25,922 - ERROR - Firebase upload error: 404 POST https://storage.googleapis.com/upload/storage/v1/b/gs://event-verse-app.appspot.com/o?uploadType=multipart: Not Found: ('Request failed with status code', 404, 'Expected one of', <HTTPStatus.OK: 200>)
+2025-02-22 13:51:19,074 - INFO - Loading Firebase credentials from: event-verse-app-firebase-adminsdk-fbsvc-45e5b30257.json
+2025-02-22 13:51:19,109 - INFO - Firebase initialized successfully
+2025-02-22 13:51:19,109 - INFO - Successfully connected to Firebase bucket: event-verse-app.appspot.com
+2025-02-22 13:51:22,790 - INFO - Starting upload process for file: wedding1.jpg
+2025-02-22 13:51:22,790 - INFO - File content read, size: 88911 bytes
+2025-02-22 13:51:22,791 - INFO - File saved locally at: uploads\wedding1.jpg
+2025-02-22 13:51:24,034 - ERROR - Firebase upload error: 404 POST https://storage.googleapis.com/upload/storage/v1/b/event-verse-app.appspot.com/o?uploadType=multipart: {
+  "error": {
+    "code": 404,
+    "message": "The specified bucket does not exist.",
+    "errors": [
+      {
+        "message": "The specified bucket does not exist.",
+        "domain": "global",
+        "reason": "notFound"
+      }
+    ]
+  }
+}
+: ('Request failed with status code', 404, 'Expected one of', <HTTPStatus.OK: 200>)
+2025-02-22 13:52:39,452 - INFO - Loading Firebase credentials from: event-verse-app-firebase-adminsdk-fbsvc-45e5b30257.json
+2025-02-22 13:52:39,487 - INFO - Firebase initialized successfully
+2025-02-22 13:52:39,488 - INFO - Successfully connected to Firebase bucket: event-verse-app.firestorage.com
+2025-02-22 13:52:44,144 - INFO - Starting upload process for file: wedding1.jpg
+2025-02-22 13:52:44,145 - INFO - File content read, size: 88911 bytes
+2025-02-22 13:52:44,146 - INFO - File saved locally at: uploads\wedding1.jpg
+2025-02-22 13:52:45,225 - ERROR - Firebase upload error: 404 POST https://storage.googleapis.com/upload/storage/v1/b/event-verse-app.firestorage.com/o?uploadType=multipart: {
+  "error": {
+    "code": 404,
+    "message": "The specified bucket does not exist.",
+    "errors": [
+      {
+        "message": "The specified bucket does not exist.",
+        "domain": "global",
+        "reason": "notFound"
+      }
+    ]
+  }
+}
+: ('Request failed with status code', 404, 'Expected one of', <HTTPStatus.OK: 200>)
+2025-02-22 13:53:26,939 - INFO - Loading Firebase credentials from: event-verse-app-firebase-adminsdk-fbsvc-45e5b30257.json
+2025-02-22 13:53:26,973 - INFO - Firebase initialized successfully
+2025-02-22 13:53:26,973 - INFO - Successfully connected to Firebase bucket: event-verse-app.firebasestorage.com
+2025-02-22 13:53:31,401 - INFO - Starting upload process for file: wedding1.jpg
+2025-02-22 13:53:31,402 - INFO - File content read, size: 88911 bytes
+2025-02-22 13:53:31,403 - INFO - File saved locally at: uploads\wedding1.jpg
+2025-02-22 13:53:32,576 - ERROR - Firebase upload error: 404 POST https://storage.googleapis.com/upload/storage/v1/b/event-verse-app.firebasestorage.com/o?uploadType=multipart: {
+  "error": {
+    "code": 404,
+    "message": "The specified bucket does not exist.",
+    "errors": [
+      {
+        "message": "The specified bucket does not exist.",
+        "domain": "global",
+        "reason": "notFound"
+      }
+    ]
+  }
+}
+: ('Request failed with status code', 404, 'Expected one of', <HTTPStatus.OK: 200>)
