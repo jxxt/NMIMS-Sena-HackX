@@ -22,12 +22,14 @@ const database = getDatabase(app);
 
 const AdminDashboard = () => {
   const [events, setEvents] = useState([]);
+  const [attendees, setAttendees] = useState({});
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Fetch events
     const eventsRef = ref(database, 'events');
-    const unsubscribe = onValue(eventsRef, (snapshot) => {
+    const unsubscribeEvents = onValue(eventsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         const eventsArray = Object.entries(data).map(([key, value]) => ({
@@ -36,9 +38,20 @@ const AdminDashboard = () => {
         }));
         setEvents(eventsArray);
       }
+    });
+
+    // Fetch attendees
+    const attendeesRef = ref(database, 'attendees');
+    const unsubscribeAttendees = onValue(attendeesRef, (snapshot) => {
+      const data = snapshot.val();
+      setAttendees(data || {});
       setLoading(false);
     });
-    return () => unsubscribe();
+
+    return () => {
+      unsubscribeEvents();
+      unsubscribeAttendees();
+    };
   }, []);
 
   const currentTime = new Date().getTime();
@@ -53,17 +66,55 @@ const AdminDashboard = () => {
     return eventTime >= currentTime;
   });
 
+  const calculateRSVPStats = () => {
+    let totalRSVP = 0;
+    let willAttend = 0;
+    let wontAttend = 0;
+
+    // Loop through all events in attendees
+    Object.values(attendees).forEach(eventAttendees => {
+      // Loop through all attendees for each event
+      Object.values(eventAttendees).forEach(attendee => {
+        totalRSVP++;
+        if (attendee.response?.toLowerCase() === "i will attend") {
+          willAttend++;
+        } else if (attendee.response?.toLowerCase() === "no, won't join") {
+          wontAttend++;
+        }
+      });
+    });
+
+    return [
+      { name: 'Will Attend', value: willAttend },
+      { name: 'Won\'t Attend', value: wontAttend },
+      { name: 'Total RSVPs', value: totalRSVP }
+    ];
+  };
+
+  const calculateEventAttendance = (eventId) => {
+    if (!attendees[eventId]) return { attending: 0, notAttending: 0, total: 0 };
+    
+    const eventAttendees = Object.values(attendees[eventId]);
+    const attending = eventAttendees.filter(a => 
+      a.response?.toLowerCase() === "i will attend"
+    ).length;
+    const notAttending = eventAttendees.filter(a => 
+      a.response?.toLowerCase() === "no, won't join"
+    ).length;
+    
+    return {
+      attending,
+      notAttending,
+      total: eventAttendees.length
+    };
+  };
+
   const eventStats = [
-    { name: 'Completed Events', value: completedEvents.length },
-    { name: 'Upcoming Events', value: upcomingEvents.length }
+    { name: 'Completed Events', value: completedEvents.length, id: 'completed' },
+    { name: 'Upcoming Events', value: upcomingEvents.length, id: 'upcoming' }
   ];
 
-  const rsvpData = [
-    { name: 'RSVPed', value: 150 },
-    { name: 'Attended', value: 120 },
-    { name: 'Did Not Attend', value: 30 }
-  ];
-
+  const rsvpData = calculateRSVPStats();
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
 
   if (loading) {
@@ -92,12 +143,21 @@ const AdminDashboard = () => {
         >
           <h2 className="text-xl font-bold mb-4">Event Statistics</h2>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={eventStats}>
+            <BarChart data={eventStats} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip />
+              <Tooltip 
+                formatter={(value) => [`${value} Events`, 'Count']}
+                contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc' }}
+              />
               <Legend />
-              <Bar dataKey="value" fill="#8884d8" />
+              <Bar 
+                dataKey="value" 
+                fill="#4CAF50"
+                animationDuration={1000}
+                animationBegin={0}
+                radius={[4, 4, 0, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </motion.div>
@@ -107,7 +167,7 @@ const AdminDashboard = () => {
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.3 }}
         >
-          <h2 className="text-xl font-bold mb-4">RSVP vs Attendance</h2>
+          <h2 className="text-xl font-bold mb-4">RSVP Statistics</h2>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie data={rsvpData} cx="50%" cy="50%" outerRadius={100} fill="#82ca9d" dataKey="value" label>
@@ -116,6 +176,7 @@ const AdminDashboard = () => {
                 ))}
               </Pie>
               <Tooltip />
+              <Legend />
             </PieChart>
           </ResponsiveContainer>
         </motion.div>
@@ -134,19 +195,25 @@ const AdminDashboard = () => {
             {upcomingEvents.length === 0 ? (
               <p className="text-gray-500">No upcoming events</p>
             ) : (
-              upcomingEvents.map(event => (
-                <div key={event.id} className="p-4 border rounded-lg hover:bg-gray-50">
-                  <h3 className="font-semibold text-lg">{event.eventName}</h3>
-                  <p className="text-gray-600">
-                    {format(new Date(event.eventDate), 'EEEE, MMM d, yyyy h:mm a')}
-                  </p>
-                  <p className="text-sm text-gray-500 mt-2">{event.eventDescription}</p>
-                  <div className="mt-2 text-sm">
-                    <p className="text-purple-600">Location: {event.eventLocation}</p>
-                    <p className="text-purple-600">Status: {event.eventStatus}</p>
+              upcomingEvents.map(event => {
+                const { attending, notAttending, total } = calculateEventAttendance(event.id);
+                return (
+                  <div key={event.id} className="p-4 border rounded-lg hover:bg-gray-50">
+                    <h3 className="font-semibold text-lg">{event.eventName}</h3>
+                    <p className="text-gray-600">
+                      {format(new Date(event.eventDate), 'EEEE, MMM d, yyyy h:mm a')}
+                    </p>
+                    <p className="text-sm text-gray-500 mt-2">{event.eventDescription}</p>
+                    <div className="mt-2 text-sm">
+                      <p className="text-purple-600">Location: {event.eventLocation}</p>
+                      <p className="text-purple-600">Status: {event.eventStatus}</p>
+                      <p className="text-purple-600">
+                        Current RSVPs: {attending} attending, {notAttending} not attending (Total: {total})
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </motion.div>
@@ -162,19 +229,25 @@ const AdminDashboard = () => {
             {completedEvents.length === 0 ? (
               <p className="text-gray-500">No completed events</p>
             ) : (
-              completedEvents.map(event => (
-                <div key={event.id} className="p-4 border rounded-lg hover:bg-gray-50">
-                  <h3 className="font-semibold text-lg">{event.eventName}</h3>
-                  <p className="text-gray-600">
-                    {format(new Date(event.eventDate), 'EEEE, MMM d, yyyy h:mm a')}
-                  </p>
-                  <p className="text-sm text-gray-500 mt-2">{event.eventDescription}</p>
-                  <div className="mt-2 text-sm">
-                    <p className="text-purple-600">Location: {event.eventLocation}</p>
-                    <p className="text-purple-600">Status: {event.eventStatus}</p>
+              completedEvents.map(event => {
+                const { attending, notAttending, total } = calculateEventAttendance(event.id);
+                return (
+                  <div key={event.id} className="p-4 border rounded-lg hover:bg-gray-50">
+                    <h3 className="font-semibold text-lg">{event.eventName}</h3>
+                    <p className="text-gray-600">
+                      {format(new Date(event.eventDate), 'EEEE, MMM d, yyyy h:mm a')}
+                    </p>
+                    <p className="text-sm text-gray-500 mt-2">{event.eventDescription}</p>
+                    <div className="mt-2 text-sm">
+                      <p className="text-purple-600">Location: {event.eventLocation}</p>
+                      <p className="text-purple-600">Status: {event.eventStatus}</p>
+                      <p className="text-purple-600">
+                        Final Attendance: {attending} attended, {notAttending} did not attend (Total RSVPs: {total})
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </motion.div>
