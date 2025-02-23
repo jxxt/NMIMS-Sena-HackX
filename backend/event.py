@@ -17,13 +17,16 @@ app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins. Change to specific domains in production.
+    # Allows all origins. Change to specific domains in production.
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],  # Allows all HTTP methods
     allow_headers=["*"],  # Allows all HTTP headers
 )
 
 # Pydantic model for request validation
+
+
 class Event(BaseModel):
     eventName: str
     eventDescription: str
@@ -34,6 +37,8 @@ class Event(BaseModel):
     eventStatus: str = Field(default="incomplete")
 
 # Function to generate a unique 6-digit event ID
+
+
 def generate_unique_event_id():
     ref = db.reference('events')
     while True:
@@ -47,6 +52,8 @@ def generate_unique_event_id():
             return event_id  # Return if unique
 
 # POST endpoint to create an event
+
+
 @app.post("/events/")
 async def create_event(event: Event):
     try:
@@ -67,6 +74,8 @@ async def create_event(event: Event):
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
 # GET endpoint to fetch event details by eventId
+
+
 @app.get("/events/{eventId}")
 async def fetch_event(eventId: str):
     try:
@@ -81,3 +90,7 @@ async def fetch_event(eventId: str):
             raise HTTPException(status_code=404, detail="Event not found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8008, reload=True)

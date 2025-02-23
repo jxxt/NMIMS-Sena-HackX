@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { db, ref, get } from "../config/firebase";
+import { db, ref, get, set, push } from "../config/firebase";
 import { useParams } from "react-router-dom";
 import styles from "./Invite.module.css";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
@@ -13,6 +13,13 @@ const EventDetails = () => {
     const [weatherData, setWeatherData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [locationCoords, setLocationCoords] = useState(null);
+    const [showPopup, setShowPopup] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [attendeeData, setAttendeeData] = useState({
+        name: "",
+        email: "",
+        response: "",
+    });
 
     useEffect(() => {
         const fetchEventDetails = async () => {
@@ -67,7 +74,6 @@ const EventDetails = () => {
         if (!location) return;
 
         try {
-            // First try to get specific location coordinates
             const response = await fetch(
                 `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
                     location
@@ -83,7 +89,6 @@ const EventDetails = () => {
                 return;
             }
 
-            // If specific location not found, try to get state coordinates
             const stateResponse = await fetch(
                 `https://nominatim.openstreetmap.org/search?format=json&state=${encodeURIComponent(
                     location
@@ -99,7 +104,6 @@ const EventDetails = () => {
                 return;
             }
 
-            // If neither location nor state found, set to null
             setLocationCoords(null);
         } catch (error) {
             console.error("Error fetching location coordinates:", error);
@@ -115,7 +119,58 @@ const EventDetails = () => {
     }, [eventData?.eventLocation]);
 
     const handleRSVP = (response) => {
-        alert(`You clicked: ${response}`);
+        setAttendeeData((prev) => ({ ...prev, response }));
+        setShowPopup(true);
+    };
+
+    const handleSubmitAttendee = async (e) => {
+        e.preventDefault();
+        setSubmitting(true);
+        try {
+            const response = await fetch("http://localhost:8000/api/rsvp", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    event_id: eventId,
+                    name: attendeeData.name,
+                    email: attendeeData.email,
+                    response: attendeeData.response,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to submit RSVP");
+            }
+
+            const result = await response.json();
+            setShowPopup(false);
+
+            if (result.status === "success") {
+                // Only show the thank you message for positive RSVPs
+                if (attendeeData.response === "I will attend") {
+                    alert(
+                        "Thank you for your response! A confirmation email has been sent."
+                    );
+                } else {
+                    alert("Your response has been recorded.");
+                }
+            } else {
+                alert("There was an issue recording your response.");
+            }
+
+            setAttendeeData({
+                name: "",
+                email: "",
+                response: "",
+            });
+        } catch (error) {
+            console.error("Error saving attendee data:", error);
+            alert("There was an error saving your response. Please try again.");
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const customMarker = new L.Icon({
@@ -152,24 +207,104 @@ const EventDetails = () => {
                     </div>
 
                     <div className={styles.rsvpSection}>
-                        <h2>Will you attend?</h2>
+                        <h2 className="mt-10 text-xl mb-5 underline font-bold">Will you attend?</h2>
                         <div className={styles.rsvpButtons}>
                             <button
                                 className={`${styles.rsvpButton} ${styles.attend}`}
                                 onClick={() => handleRSVP("I will attend")}
+                                disabled={submitting}
                             >
                                 I will attend
                             </button>
                             <button
                                 className={`${styles.rsvpButton} ${styles.decline}`}
                                 onClick={() => handleRSVP("No, won't join")}
+                                disabled={submitting}
                             >
                                 No, won't join
                             </button>
                         </div>
                     </div>
 
-                    <div className={styles.sharedAlbumContainer}>
+                    {showPopup && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                            <div className="bg-white rounded-lg p-6 w-11/12 max-w-md">
+                                <h3 className="text-xl font-semibold mb-4">
+                                    Please enter your details
+                                </h3>
+                                <form
+                                    onSubmit={handleSubmitAttendee}
+                                    className="space-y-4"
+                                >
+                                    <div>
+                                        <label
+                                            htmlFor="name"
+                                            className="block text-sm font-medium text-gray-700 mb-1"
+                                        >
+                                            Name:
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="name"
+                                            value={attendeeData.name}
+                                            onChange={(e) =>
+                                                setAttendeeData((prev) => ({
+                                                    ...prev,
+                                                    name: e.target.value,
+                                                }))
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            required
+                                            disabled={submitting}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label
+                                            htmlFor="email"
+                                            className="block text-sm font-medium text-gray-700 mb-1"
+                                        >
+                                            Email:
+                                        </label>
+                                        <input
+                                            type="email"
+                                            id="email"
+                                            value={attendeeData.email}
+                                            onChange={(e) =>
+                                                setAttendeeData((prev) => ({
+                                                    ...prev,
+                                                    email: e.target.value,
+                                                }))
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            required
+                                            disabled={submitting}
+                                        />
+                                    </div>
+                                    <div className="flex justify-end space-x-2 mt-6">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPopup(false)}
+                                            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+                                            disabled={submitting}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                                            disabled={submitting}
+                                        >
+                                            {submitting
+                                                ? "Submitting..."
+                                                : "Submit"}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* <div className={styles.sharedAlbumContainer}>
                         <h2>Shared Album</h2>
                         <div className={styles.albumGrid}>
                             <div className={styles.albumItem}>Photo 1</div>
@@ -177,11 +312,11 @@ const EventDetails = () => {
                             <div className={styles.albumItem}>Photo 3</div>
                             <div className={styles.albumItem}>Photo 4</div>
                         </div>
-                    </div>
+                    </div> */}
 
                     {locationCoords && (
                         <div className={styles.locationContainer}>
-                            <h2>Location</h2>
+                            <h2 className="mt-10 text-xl mb-5 underline font-bold">Location</h2>
                             <MapContainer
                                 center={[
                                     locationCoords.latitude,
@@ -206,7 +341,7 @@ const EventDetails = () => {
                     )}
 
                     <div className={styles.weatherContainer}>
-                        <h2>Weather Forecast</h2>
+                        <h2 className="mt-0 text-xl mb-2 underline font-bold">Weather Forecast</h2>
                         {loading ? (
                             <p>Loading weather data...</p>
                         ) : weatherData ? (

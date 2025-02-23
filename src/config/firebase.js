@@ -6,7 +6,7 @@ import {
     isSignInWithEmailLink,
     signInWithEmailLink,
 } from "firebase/auth";
-import { getDatabase, ref, get, set } from "firebase/database";
+import { getDatabase, ref, get, set, push } from "firebase/database"; // Added push here
 
 const firebaseConfig = {
     apiKey: "AIzaSyBr9QcMb2DyLIeKxgTVJC9BFUOWo9ZzmdI",
@@ -35,4 +35,5 @@ export {
     ref,
     get,
     set,
+    push, // Added push to exports
 };
