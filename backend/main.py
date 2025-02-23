@@ -14,6 +14,11 @@ import os
 from typing import Optional
 import logging
 from email.utils import formataddr
+from datetime import datetime
+import qrcode
+from io import BytesIO
+import base64
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -73,6 +78,11 @@ class RSVPData(BaseModel):
 
 
 def get_email_template(event_data: dict, rsvp_data: RSVPData) -> str:
+    # Parse ISO 8601 datetime
+    event_datetime = datetime.fromisoformat(event_data['eventDate'])
+    event_date = event_datetime.strftime("%d %b %Y")  # e.g., 23 Feb 2025
+    event_time = event_datetime.strftime("%I:%M %p")  # e.g., 08:00 AM
+
     return f"""
         <!DOCTYPE html>
         <html lang="en">
@@ -82,59 +92,136 @@ def get_email_template(event_data: dict, rsvp_data: RSVPData) -> str:
             <title>Registration Confirmed - {event_data['eventName']}</title>
             <style type="text/css">
                 body {{
-                    font-family: Arial, sans-serif;
                     margin: 0;
                     padding: 0;
+                    min-width: 100%;
+                    font-family: Arial, sans-serif;
+                    line-height: 1.5;
                     background-color: #f5f5f5;
+                    color: #333333;
                 }}
-                .container {{
+                .wrapper {{
+                    width: 100%;
+                    table-layout: fixed;
+                    background-color: #f5f5f5;
+                    padding: 40px 0;
+                }}
+                .main {{
+                    width: 100%;
                     max-width: 600px;
+                    background-color: #ffffff;
+                    border-radius: 8px;
                     margin: 0 auto;
-                    padding: 20px;
                 }}
                 .header {{
                     background-color: #1e40af;
-                    color: white;
-                    padding: 20px;
-                    text-align: center;
-                    border-radius: 10px 10px 0 0;
+                    padding: 30px;
+                    color: #ffffff;
+                    border-radius: 8px 8px 0 0;
                 }}
                 .content {{
-                    background-color: white;
+                    padding: 30px;
+                }}
+                .details-box {{
+                    background-color: #f8f9fa;
                     padding: 20px;
-                    border-radius: 0 0 10px 10px;
+                    margin: 20px 0;
+                    border-radius: 5px;
                 }}
                 .footer {{
-                    text-align: center;
+                    background-color: #f8f9fa;
                     padding: 20px;
-                    color: #666;
+                    border-radius: 0 0 8px 8px;
                     font-size: 12px;
+                    color: #666666;
+                }}
+                .success-badge {{
+                    background-color: #22c55e;
+                    color: white;
+                    padding: 8px 15px;
+                    border-radius: 15px;
+                    font-size: 14px;
+                    display: inline-block;
+                    margin-bottom: 20px;
                 }}
             </style>
         </head>
         <body>
-            <div class="container">
-                <div class="header">
-                    <h1>Registration Confirmed!</h1>
-                </div>
-                <div class="content">
-                    <p>Hello {rsvp_data.name},</p>
-                    <p>Thank you for registering for <strong>{event_data['eventName']}</strong>.</p>
-                    <p><strong>Event Details:</strong></p>
-                    <ul>
-                        <li>Date: {event_data['eventDate']}</li>
-                        <li>Location: {event_data['eventLocation']}</li>
-                        <li>Description: {event_data['eventDescription']}</li>
-                    </ul>
-                    <p>We look forward to seeing you!</p>
-                </div>
-                <div class="footer">
-                    <p>&copy; {datetime.now().year} EventVerse. All rights reserved.</p>
-                </div>
+            <div class="wrapper">
+                <table class="main" width="100%">
+                    <tr>
+                        <td class="header">
+                            <table width="100%">
+                                <tr>
+                                    <td style="color: #ffffff;">
+                                        <h1 style="margin: 0;">Registration Confirmed!</h1>
+                                        <p style="margin: 10px 0 0 0;">You're all set for {event_data['eventName']}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="content">
+                            <table width="100%">
+                                <tr>
+                                    <td>
+                                        <div class="success-badge">✓ Registration Complete</div>
+                                        <h2 style="color: #1e40af; margin-top: 0;">Thank you for registering!</h2>
+                                        <p>Your registration for {event_data['eventName']} has been confirmed. We look forward to seeing you there!</p>
+                                        <div class="details-box">
+                                            <table width="100%">
+                                                <tr>
+                                                    <td style="padding: 10px 0;">
+                                                        <strong>📅 Event Date:</strong><br>
+                                                        {event_date}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 10px 0;">
+                                                        <strong>⏰ Event Time:</strong><br>
+                                                        {event_time}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 10px 0;">
+                                                        <strong>📍 Location:</strong><br>
+                                                        {event_data['eventLocation']}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 10px 0;">
+                                                        <strong>📝 Description:</strong><br>
+                                                        {event_data['eventDescription']}
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="footer">
+                            <table width="100%">
+                                <tr>
+                                    <td align="center">
+                                        <p style="margin: 0;">
+                                            This is an automated email, please do not reply.<br>
+                                            © {datetime.now().year} EventVerse. All rights reserved.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
             </div>
         </body>
         </html>
     """
+
 # ================== Email Sender ==================
 
 
@@ -149,6 +236,15 @@ async def send_confirmation_email(event_data: dict, rsvp_data: RSVPData) -> bool
         # Attach HTML content
         html_content = get_email_template(event_data, rsvp_data)
         msg.attach(MIMEText(html_content, "html"))
+
+        # Generate QR Code and attach it as an inline image
+        qr_base64 = generate_qr_code(rsvp_data)
+        qr_img_cid = "qr_code_cid"
+        qr_img_html = f'<img src="data:image/png;base64,{qr_base64}" alt="QR Code" style="width:200px;height:200px;">'
+
+        # Add QR code in email body
+        html_content_with_qr = html_content.replace("</body>", f"<h3>Your Event QR Code:</h3>{qr_img_html}</body>")
+        msg.attach(MIMEText(html_content_with_qr, "html"))
 
         # Send email
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
@@ -298,3 +394,25 @@ async def get_rsvps(event_id: str):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+
+def generate_qr_code(rsvp_data: RSVPData) -> str:
+    # Data to encode in the QR code
+    qr_data = f"Name: {rsvp_data.name}\nEmail: {rsvp_data.email}\nEvent ID: {rsvp_data.event_id}"
+    
+    # Generate QR Code
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(qr_data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    # Save the QR Code image to a BytesIO stream
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    qr_base64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+    return qr_base64

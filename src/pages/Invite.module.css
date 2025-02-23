@@ -70,11 +70,12 @@
     font-size: 20px;
     margin-bottom: 12px;
     color: #ffffff;
+    font-weight: bolder;
   }
   
   .eventDetails p {
     font-size: 16px;
-    color: #7777ff;
+    color: #ffffff;
     margin: 8px 0;
   }
   

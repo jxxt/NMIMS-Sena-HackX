@@ -29,7 +29,9 @@ const UserEvents = () => {
                 if (eventsSnapshot.exists()) {
                     const eventsData = eventsSnapshot.val();
                     const filteredEvents = Object.entries(eventsData)
-                        .filter(([, event]) => event.eventHostId === userEventHostId)
+                        .filter(
+                            ([, event]) => event.eventHostId === userEventHostId
+                        )
                         .map(([id, event]) => ({ id, ...event }));
                     setUserEvents(filteredEvents);
                 }
@@ -65,8 +67,12 @@ const UserEvents = () => {
                                 Location: {event.eventLocation}
                             </p>
                             <p className="text-gray-400">
-                                Date: {event.eventDate}
+                                Date:{" "}
+                                {new Date(event.eventDate).toLocaleDateString()}{" "}
+                                at{" "}
+                                {new Date(event.eventDate).toLocaleTimeString()}
                             </p>
+
                             <p className="text-gray-400">
                                 Status: {event.eventStatus}
                             </p>
@@ -74,7 +80,7 @@ const UserEvents = () => {
                                 onClick={() => handleViewEvent(event.id)}
                                 className="mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition duration-300"
                             >
-                                View Event JSON
+                                View Invite
                             </button>
                         </div>
                     ))

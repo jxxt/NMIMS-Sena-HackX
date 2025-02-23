@@ -5,6 +5,8 @@ import styles from "./Invite.module.css";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import { QRCodeCanvas } from "qrcode.react";
+import { useRef } from "react";
 
 const EventDetails = () => {
     const { eventId } = useParams();
@@ -178,6 +180,17 @@ const EventDetails = () => {
         iconSize: [30, 30],
     });
 
+    const qrRef = useRef(null);
+
+    const handleDownload = () => {
+        const canvas = qrRef.current.querySelector("canvas");
+        const imageUrl = canvas.toDataURL("image/png");
+        const downloadLink = document.createElement("a");
+        downloadLink.href = imageUrl;
+        downloadLink.download = "event-qr-code.png";
+        downloadLink.click();
+    };
+
     return (
         <div className={styles.appContainer}>
             <div className={styles.mobileFrame}>
@@ -195,8 +208,18 @@ const EventDetails = () => {
                             {eventData?.eventDescription}
                         </p>
                         <p>
-                            <strong>Date:</strong> {eventData?.eventDate}
+                            <strong>Date:</strong>{" "}
+                            {new Date(
+                                eventData?.eventDate
+                            ).toLocaleDateString()}
                         </p>
+                        <p>
+                            <strong>Time:</strong>{" "}
+                            {new Date(
+                                eventData?.eventDate
+                            ).toLocaleTimeString()}
+                        </p>
+
                         <p>
                             <strong>Location:</strong>{" "}
                             {eventData?.eventLocation}
@@ -207,7 +230,9 @@ const EventDetails = () => {
                     </div>
 
                     <div className={styles.rsvpSection}>
-                        <h2 className="mt-10 text-xl mb-5 underline font-bold">Will you attend?</h2>
+                        <h2 className="mt-10 text-xl mb-5 underline font-bold">
+                            Will you attend?
+                        </h2>
                         <div className={styles.rsvpButtons}>
                             <button
                                 className={`${styles.rsvpButton} ${styles.attend}`}
@@ -316,7 +341,9 @@ const EventDetails = () => {
 
                     {locationCoords && (
                         <div className={styles.locationContainer}>
-                            <h2 className="mt-10 text-xl mb-5 underline font-bold">Location</h2>
+                            <h2 className="mt-10 text-xl mb-5 underline font-bold">
+                                Location
+                            </h2>
                             <MapContainer
                                 center={[
                                     locationCoords.latitude,
@@ -341,7 +368,9 @@ const EventDetails = () => {
                     )}
 
                     <div className={styles.weatherContainer}>
-                        <h2 className="mt-0 text-xl mb-2 underline font-bold">Weather Forecast</h2>
+                        <h2 className="mt-0 text-xl mb-2 underline font-bold">
+                            Weather Forecast
+                        </h2>
                         {loading ? (
                             <p>Loading weather data...</p>
                         ) : weatherData ? (
@@ -366,6 +395,32 @@ const EventDetails = () => {
                         ) : (
                             <p>Failed to fetch weather data.</p>
                         )}
+                    </div>
+
+                    <div className="flex flex-col items-center mt-10 p-5 border border-gray-200 rounded-2xl bg-gray-50 shadow-sm">
+                        <h2 className="text-xl mb-4 underline font-bold">
+                            Share Event
+                        </h2>
+                        <div ref={qrRef} className="flex justify-center">
+                            <QRCodeCanvas
+                                value={window.location.href}
+                                size={200}
+                                bgColor={"#ffffff"}
+                                fgColor={"#000000"}
+                                level={"H"}
+                                includeMargin={true}
+                            />
+                        </div>
+                        <p className="mt-2 text-gray-600">
+                            Scan this QR code to view this event on another
+                            device.
+                        </p>
+                        <button
+                            className="mt-3 text-sm px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                            onClick={handleDownload}
+                        >
+                            Download QR
+                        </button>
                     </div>
                 </div>
             </div>
