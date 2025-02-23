@@ -50,7 +50,7 @@ async def upload_image(file: UploadFile = File(...)):
         bucket = storage.bucket()
 
         # Generate unique filename
-        file_name = f"{uuid.uuid4()}_{file.filename}"
+        file_name = f"{file.filename}"
         blob = bucket.blob(file_name)
         
         logging.info(f"Uploading file: {file_name}")

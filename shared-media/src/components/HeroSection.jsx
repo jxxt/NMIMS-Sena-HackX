@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import google from "../assets/google.png";
-import nmims from "../assets/nmims.png";
+import { Calendar, Users, Bell, Shield } from 'lucide-react';
 
 const CodeBlock = () => {
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
@@ -161,25 +160,28 @@ export const HeroSection = () => {
     }
   };
 
-  const clientVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.5,
-        delay: 1
-      }
+  const serviceCards = [
+    {
+      icon: Calendar,
+      title: "Event Planning",
+      description: "Comprehensive tools for seamless event organization and scheduling"
+    },
+    {
+      icon: Users,
+      title: "Attendee Management",
+      description: "Smart registration and check-in systems for your guests"
+    },
+    {
+      icon: Bell,
+      title: "Real-time Updates",
+      description: "Instant notifications and live event updates for all participants"
+    },
+    {
+      icon: Shield,
+      title: "Secure Ticketing",
+      description: "Protected digital ticketing system with fraud prevention"
     }
-  };
-
-  const logoHoverVariants = {
-    hover: {
-      scale: 1.1,
-      rotate: 5,
-      transition: { duration: 0.3 }
-    }
-  };
+  ];
 
   const cursorVariants = {
     blink: {
@@ -193,7 +195,7 @@ export const HeroSection = () => {
   };
 
   return (
-    <div>
+    <div className="min-h-screen">
       <div className="flex flex-row items-center justify-between mx-16 mt-20 px-32">
         <motion.div 
           initial="hidden"
@@ -285,51 +287,30 @@ export const HeroSection = () => {
       </div>
 
       <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={clientVariants}
-        className="flex justify-center mt-20"
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.5 }}
+        className="grid grid-cols-4 gap-6 mx-32 mt-20 mb-16"
       >
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          transition={{ duration: 0.3 }}
-          className="bg-gray-600 bg-opacity-80 p-6 rounded-xl w-[500px] h-40 flex flex-col items-center justify-center shadow-lg"
-        >
-          <motion.h2
-            variants={textVariants}
-            className="text-white text-center text-lg font-bold mb-3"
+        {serviceCards.map((service, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 * index }}
+            whileHover={{ scale: 1.05, y: -5 }}
+            className="bg-white p-6 rounded-xl shadow-lg border border-purple-100 flex flex-col items-center text-center"
           >
-            Our Clients
-          </motion.h2>
-
-          <div className="grid grid-cols-2 gap-6">
-            {[{ src: google, name: "Google" }, { src: nmims, name: "NMIMS" }].map((client, index) => (
-              <motion.div
-                key={index}
-                variants={logoHoverVariants}
-                whileHover="hover"
-                className="flex flex-col items-center"
-              >
-                <motion.img
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 * index }}
-                  src={client.src}
-                  alt={client.name}
-                  className="w-14 h-auto opacity-100 mx-20"
-                />
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.3 + 0.2 * index }}
-                  className="text-gray-300 text-sm mt-1"
-                >
-                  {client.name}
-                </motion.p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+            <motion.div
+              whileHover={{ rotate: 5 }}
+              className="mb-4 text-purple-600"
+            >
+              <service.icon size={32} />
+            </motion.div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">{service.title}</h3>
+            <p className="text-gray-600">{service.description}</p>
+          </motion.div>
+        ))}
       </motion.div>
     </div>
   );
