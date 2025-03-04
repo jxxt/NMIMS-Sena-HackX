@@ -237,14 +237,14 @@ async def send_confirmation_email(event_data: dict, rsvp_data: RSVPData) -> bool
         html_content = get_email_template(event_data, rsvp_data)
         msg.attach(MIMEText(html_content, "html"))
 
-        # Generate QR Code and attach it as an inline image
-        qr_base64 = generate_qr_code(rsvp_data)
-        qr_img_cid = "qr_code_cid"
-        qr_img_html = f'<img src="data:image/png;base64,{qr_base64}" alt="QR Code" style="width:200px;height:200px;">'
+        # # Generate QR Code and attach it as an inline image
+        # qr_base64 = generate_qr_code(rsvp_data)
+        # qr_img_cid = "qr_code_cid"
+        # qr_img_html = f'<img src="data:image/png;base64,{qr_base64}" alt="QR Code" style="width:200px;height:200px;">'
 
-        # Add QR code in email body
-        html_content_with_qr = html_content.replace("</body>", f"<h3>Your Event QR Code:</h3>{qr_img_html}</body>")
-        msg.attach(MIMEText(html_content_with_qr, "html"))
+        # # Add QR code in email body
+        # html_content_with_qr = html_content.replace("</body>", f"<h3>Your Event QR Code:</h3>{qr_img_html}</body>")
+        # msg.attach(MIMEText(html_content_with_qr, "html"))
 
         # Send email
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
