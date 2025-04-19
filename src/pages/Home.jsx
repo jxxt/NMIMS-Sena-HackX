@@ -112,7 +112,7 @@ const Home = () => {
 
         try {
             const response = await axios.post(
-                "http://localhost:8000/events/",
+                "https://render-fast-api.onrender.com/events/",
                 requestData
             );
             console.log(response.data);
