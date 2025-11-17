@@ -45,6 +45,10 @@ const UserEvents = () => {
         navigate(`/event/${eventId}`);
     };
 
+    const handleViewRSVPs = (eventId) => {
+        navigate(`/rsvp/${eventId}`);
+    };
+
     return (
         <div className="min-h-screen w-full flex items-center justify-center bg-gray-950 p-4">
             <div className="w-full max-w-4xl bg-gray-900 rounded-xl shadow-2xl p-8 space-y-8">
@@ -76,12 +80,20 @@ const UserEvents = () => {
                             <p className="text-gray-400">
                                 Status: {event.eventStatus}
                             </p>
-                            <button
-                                onClick={() => handleViewEvent(event.id)}
-                                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition duration-300"
-                            >
-                                View Invite
-                            </button>
+                            <div className="flex gap-3 mt-4">
+                                <button
+                                    onClick={() => handleViewEvent(event.id)}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition duration-300"
+                                >
+                                    View Invite
+                                </button>
+                                <button
+                                    onClick={() => handleViewRSVPs(event.id)}
+                                    className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition duration-300"
+                                >
+                                    View RSVPs
+                                </button>
+                            </div>
                         </div>
                     ))
                 ) : (

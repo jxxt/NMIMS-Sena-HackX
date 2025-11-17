@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import UserEvents from "./pages/UserEvents";
 import Invite from "./pages/Invite";
 import EventDetails from "./pages/EventDetails";
+import RSVPList from "./pages/RSVPList";
 
 function App() {
     return (
@@ -14,6 +15,7 @@ function App() {
                 <Route path="/events" element={<UserEvents />} />
                 <Route path="/invite" element={<Invite />} />
                 <Route path="/event/:eventId" element={<EventDetails />} />
+                <Route path="/rsvp/:eventId" element={<RSVPList />} />
             </Routes>
         </Router>
     );
