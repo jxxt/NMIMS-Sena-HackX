@@ -102,7 +102,9 @@ const Home = () => {
         const { eventDate, eventTime, ...restData } = eventData;
 
         // Combine date and time into a single ISO string
-        const combinedDateTime = new Date(`${eventDate}T${eventTime}`).toISOString();
+        const combinedDateTime = new Date(
+            `${eventDate}T${eventTime}`
+        ).toISOString();
 
         // Prepare data to be sent
         const requestData = {
@@ -112,7 +114,7 @@ const Home = () => {
 
         try {
             const response = await axios.post(
-                "https://render-fast-api.onrender.com/events/",
+                "https://eventverse-backend.onrender.com/events/",
                 requestData
             );
             console.log(response.data);
@@ -229,7 +231,9 @@ const Home = () => {
                                 {suggestions.map((suggestion, index) => (
                                     <li
                                         key={index}
-                                        onClick={() => handleSuggestionClick(suggestion)}
+                                        onClick={() =>
+                                            handleSuggestionClick(suggestion)
+                                        }
                                         className="cursor-pointer px-4 py-2 hover:bg-gray-700"
                                     >
                                         {suggestion.properties.formatted}
@@ -237,7 +241,10 @@ const Home = () => {
                                 ))}
                             </ul>
 
-                            <button type="submit" className="w-full px-4 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition duration-200 hover:shadow-lg">
+                            <button
+                                type="submit"
+                                className="w-full px-4 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition duration-200 hover:shadow-lg"
+                            >
                                 Create Event
                             </button>
                         </form>

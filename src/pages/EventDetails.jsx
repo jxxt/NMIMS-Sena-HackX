@@ -129,18 +129,21 @@ const EventDetails = () => {
         e.preventDefault();
         setSubmitting(true);
         try {
-            const response = await fetch("https://render-fast-api.onrender.com/api/rsvp", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    event_id: eventId,
-                    name: attendeeData.name,
-                    email: attendeeData.email,
-                    response: attendeeData.response,
-                }),
-            });
+            const response = await fetch(
+                "https://eventverse-backend.onrender.com/api/rsvp",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        event_id: eventId,
+                        name: attendeeData.name,
+                        email: attendeeData.email,
+                        response: attendeeData.response,
+                    }),
+                }
+            );
 
             if (!response.ok) {
                 throw new Error("Failed to submit RSVP");
